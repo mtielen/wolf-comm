@@ -145,41 +145,52 @@ class WolfClient:
         res = await self.__request('post', 'api/portal/CloseSystem', json=data)
         _LOGGER.debug('Close system response: %s', res)
 
-    @staticmethod
-    def extract_messages_json(text):
-        json_match = re.search(r'messages:\s*({.*?})\s*}', text, re.DOTALL)
+        @staticmethod
+        def extract_messages_json(text):
+            # Cerca di trovare l'oggetto "messages" che può contenere oggetti nidificati
+            json_match = re.search(r'messages:\s*(\{.*\})\s*\}\);', text, re.DOTALL)
 
-        if json_match:
-            json_string = json_match.group(1)
-            json_string = re.sub(r'([a-zA-Z0-9_.%-]+)\s*:', r'"\1":', json_string)
-            return json.loads(json_string)
+            if json_match:
+                json_string = json_match.group(1)
 
-        return None
+                # Aggiungi virgolette alle chiavi che non sono delimitate da virgolette
+                json_string = re.sub(r'([a-zA-Z0-9_.%-]+)\s*:', r'"\1":', json_string)
 
-    @staticmethod
-    async def fetch_localized_text(language: str):
-        url = f'https://www.wolf-smartset.com/js/localized-text/text.culture.{language}.js'
+                try:
+                    return json.loads(json_string)
+                except json.JSONDecodeError as e:
+                    _LOGGER.error('Errore nel parsing del JSON: %s', str(e))
+                    return None
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                _LOGGER.info('Response status %s', response.status)
-                if response.status == 200 or response.status == 304:
-                    return await response.text()
-                else:
-                    return ""
+            _LOGGER.error('Impossibile trovare l\'oggetto messages nel testo fornito.')
+            return None
 
-    async def load_localized_json(self, language_input: str):
-        _LOGGER.info('Inside load_localized_json %s', language_input)
-        res = await self.fetch_localized_text(language_input)
-        _LOGGER.info('Fetched localized text %s', res)
-        parsed_json = WolfClient.extract_messages_json(res)
+        @staticmethod
+        async def fetch_localized_text(language: str):
+            url = f'https://www.wolf-smartset.com/js/localized-text/text.culture.{language}.js'
 
-        _LOGGER.info('Parsed json %s', language_input)
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    _LOGGER.info('Response status %s', response.status)
+                    if response.status == 200 or response.status == 304:
+                        return await response.text()
+                    else:
+                        _LOGGER.error('Errore nella richiesta HTTP: status %s', response.status)
+                        return ""
 
-        if parsed_json is not None:
-            self.language = parsed_json
-            _LOGGER.info('Loaded language %s', language_input)
-            _LOGGER.info('Loaded language json %s', parsed_json)
+        async def load_localized_json(self, language_input: str):
+            _LOGGER.info('Inside load_localized_json %s', language_input)
+            res = await self.fetch_localized_text(language_input)
+            _LOGGER.info('Fetched localized text %s', res)
+
+            parsed_json = WolfClient.extract_messages_json(res)
+
+            if parsed_json is not None:
+                self.language = parsed_json
+                _LOGGER.info('Loaded language %s', language_input)
+                _LOGGER.info('Loaded language json %s', parsed_json)
+            else:
+                _LOGGER.error('Impossibile caricare il JSON localizzato per la lingua %s', language_input)
 
     # api/portal/GetParameterValues
     async def fetch_value(self, gateway_id, system_id, parameters: list[Parameter]):
