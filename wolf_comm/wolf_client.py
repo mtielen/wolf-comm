@@ -40,6 +40,7 @@ class WolfClient:
 
 
     def __init__(self, username: str, password: str, client = None, client_lambda = None, language="de"):
+        _LOGGER.debug('Creating WolfClient')
         if client != None and client_lambda != None:
             raise RuntimeError("Only one of client and client_lambda is allowed!")
         elif client != None:
