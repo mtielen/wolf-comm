@@ -40,7 +40,7 @@ class WolfClient:
             raise RuntimeError("No valid client configuration")
 
 
-    def __init__(self, username: str, password: str, client = None, client_lambda = None, language="de"):
+    def __init__(self, username: str, password: str, client = None, client_lambda = None):
         _LOGGER.debug('Creating WolfClient')
         if client != None and client_lambda != None:
             raise RuntimeError("Only one of client and client_lambda is allowed!")
@@ -57,12 +57,6 @@ class WolfClient:
         self.last_access = None
         self.last_failed = False
         self.last_session_refesh = None
-        try:
-            _LOGGER.info('Preloading language %s', language)
-            asyncio.run(self.load_localized_json(language))
-        except Exception as e:
-            _LOGGER.error('Failed to load language %s', language)
-            _LOGGER.error(e)
 
     async def __request(self, method: str, path: str, **kwargs) -> Union[dict, list]:
         if self.tokens is None or self.tokens.is_expired():
