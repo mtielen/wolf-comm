@@ -170,6 +170,7 @@ class WolfClient:
 
     async def load_localized_json(self, language_input: str):
         res = await self.fetch_localized_text(language_input)
+        _LOGGER.debug('Fetched localized text %s', res)
         parsed_json = WolfClient.extract_messages_json(res)
 
         _LOGGER.debug('Parsed json %s', language_input)
