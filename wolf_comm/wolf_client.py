@@ -39,7 +39,6 @@ class WolfClient:
             raise RuntimeError("No valid client configuration")
 
     def __init__(self, username: str, password: str, client=None, client_lambda=None):
-        _LOGGER.debug('Creating WolfClient')
         if client != None and client_lambda != None:
             raise RuntimeError("Only one of client and client_lambda is allowed!")
         elif client != None:
