@@ -48,6 +48,10 @@ class SimpleParameter(Parameter):
     def name(self):
         return self._name
 
+    @name.setter
+    def name(self, name: str):
+        self._name = name
+
     @property
     def value_id(self):
         return self._value_id
