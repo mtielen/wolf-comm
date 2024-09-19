@@ -6,6 +6,7 @@ import logging
 import re
 import json
 import aiohttp
+import asyncio
 from httpx import Headers
 
 from wolf_comm.constants import BASE_URL_PORTAL, ID, GATEWAY_ID, NAME, SYSTEM_ID, MENU_ITEMS, TAB_VIEWS, BUNDLE_ID, \
@@ -58,7 +59,7 @@ class WolfClient:
         self.last_session_refesh = None
         try:
             _LOGGER.info('Preloading language %s', language)
-            self.load_localized_json(language)
+            asyncio.run(self.load_localized_json(language))
         except Exception as e:
             _LOGGER.error('Failed to load language %s', language)
             _LOGGER.error(e)
