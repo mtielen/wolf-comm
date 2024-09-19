@@ -39,8 +39,7 @@ class WolfClient:
         else:
             raise RuntimeError("No valid client configuration")
 
-
-    def __init__(self, username: str, password: str, client = None, client_lambda = None):
+    def __init__(self, username: str, password: str, client=None, client_lambda=None):
         _LOGGER.debug('Creating WolfClient')
         if client != None and client_lambda != None:
             raise RuntimeError("Only one of client and client_lambda is allowed!")
@@ -111,7 +110,6 @@ class WolfClient:
         _LOGGER.debug('Fetched system state: %s', system_state_response)
         return system_state_response[0][GATEWAY_STATE][IS_ONLINE]
 
-
     # api/portal/GetGuiDescriptionForGateway?GatewayId={gateway_id}&SystemId={system_id}
     async def fetch_parameters(self, gateway_id, system_id) -> list[Parameter]:
         payload = {GATEWAY_ID: gateway_id, SYSTEM_ID: system_id}
@@ -147,23 +145,30 @@ class WolfClient:
 
     @staticmethod
     def extract_messages_json(text):
-        # Cerca di trovare l'oggetto "messages" che può contenere oggetti nidificati
-        json_match = re.search(r'messages:\s*(\{.*\})\s*\}\);', text, re.DOTALL)
+        json_match = re.search(r'messages:\s*({.*?})\s*}', text, re.DOTALL)
 
         if json_match:
             json_string = json_match.group(1)
+            return WolfClient.try_and_parse(json_string, 1000)
+        else:
+            return None
 
-            # Aggiungi virgolette alle chiavi che non sono delimitate da virgolette
-            json_string = re.sub(r'([a-zA-Z0-9_.%-]+)\s*:', r'"\1":', json_string)
+    @staticmethod
+    def try_and_parse(text, times):
+        if times == 0:
+            return text
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError as e:
+            line = e.lineno - 1
 
-            try:
-                return json.loads(json_string)
-            except json.JSONDecodeError as e:
-                _LOGGER.error('Errore nel parsing del JSON: %s', str(e))
-                return None
+            text_lines = text.split('\n')
 
-        _LOGGER.error('Impossibile trovare l\'oggetto messages nel testo fornito.')
-        return None
+            if line < len(text_lines):
+                text_lines.pop(line)
+
+            new_text = '\n'.join(text_lines)
+            return WolfClient.try_and_parse(new_text, times - 1)
 
     @staticmethod
     async def fetch_localized_text(language: str):
@@ -256,6 +261,7 @@ class WolfClient:
 class FetchFailed(Exception):
     """Server returned 500 code with message while executing query"""
     pass
+
 
 class ParameterReadError(Exception):
     """Server returned RedParameterValues error"""
