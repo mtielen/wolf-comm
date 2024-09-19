@@ -98,6 +98,10 @@ class Temperature(UnitParameter):
     def name(self):
         return self._name
 
+    @name.setter
+    def name(self, name: str):
+        self._name = name
+
     @property
     def value_id(self):
         return self._value_id
@@ -129,6 +133,10 @@ class Pressure(UnitParameter):
     @property
     def name(self):
         return self._name
+
+    @name.setter
+    def name(self, name: str):
+        self._name = name
 
     @property
     def value_id(self):
@@ -162,6 +170,10 @@ class HoursParameter(UnitParameter):
     def name(self):
         return self._name
 
+    @name.setter
+    def name(self, name: str):
+        self._name = name
+
     @property
     def value_id(self):
         return self._value_id
@@ -194,6 +206,10 @@ class PercentageParameter(UnitParameter):
     @property
     def name(self):
         return self._name
+
+    @name.setter
+    def name(self, name: str):
+        self._name = name
 
     @property
     def value_id(self):
@@ -243,6 +259,10 @@ class ListItemParameter(Parameter):
     @property
     def name(self):
         return self._name
+
+    @name.setter
+    def name(self, name: str):
+        self._name = name
 
     @property
     def parent(self):
