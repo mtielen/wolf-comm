@@ -163,7 +163,8 @@ class WolfClient:
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
-                if response.status == 200:
+                _LOGGER.info('Response status %s', response.status)
+                if response.status == 200 or response.status == 304:
                     return await response.text()
                 else:
                     return ""
