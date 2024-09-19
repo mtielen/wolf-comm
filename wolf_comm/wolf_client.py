@@ -56,8 +56,12 @@ class WolfClient:
         self.last_access = None
         self.last_failed = False
         self.last_session_refesh = None
-        _LOGGER.info('Preloading language %s', language)
-        self.load_localized_json(language)
+        try:
+            _LOGGER.info('Preloading language %s', language)
+            self.load_localized_json(language)
+        except Exception as e:
+            _LOGGER.error('Failed to load language %s', language)
+            _LOGGER.error(e)
 
     async def __request(self, method: str, path: str, **kwargs) -> Union[dict, list]:
         if self.tokens is None or self.tokens.is_expired():
@@ -170,6 +174,7 @@ class WolfClient:
                     return ""
 
     async def load_localized_json(self, language_input: str):
+        _LOGGER.info('Inside load_localized_json %s', language_input)
         res = await self.fetch_localized_text(language_input)
         _LOGGER.info('Fetched localized text %s', res)
         parsed_json = WolfClient.extract_messages_json(res)
