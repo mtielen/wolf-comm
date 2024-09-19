@@ -128,6 +128,7 @@ class WolfClient:
                 name = val.name
                 if self.language is not None and val.name in self.language:
                     name = self.language[val.name]
+                    val.name = name
 
                 if val.value_id not in distinct_ids and name not in distinct_names:
                     distinct_ids.append(val.value_id)
