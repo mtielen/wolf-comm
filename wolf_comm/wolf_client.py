@@ -170,15 +170,15 @@ class WolfClient:
 
     async def load_localized_json(self, language_input: str):
         res = await self.fetch_localized_text(language_input)
-        _LOGGER.debug('Fetched localized text %s', res)
+        _LOGGER.info('Fetched localized text %s', res)
         parsed_json = WolfClient.extract_messages_json(res)
 
-        _LOGGER.debug('Parsed json %s', language_input)
+        _LOGGER.info('Parsed json %s', language_input)
 
         if parsed_json is not None:
             self.language = parsed_json
-            _LOGGER.debug('Loaded language %s', language_input)
-            _LOGGER.debug('Loaded language json %s', parsed_json)
+            _LOGGER.info('Loaded language %s', language_input)
+            _LOGGER.info('Loaded language json %s', parsed_json)
 
     # api/portal/GetParameterValues
     async def fetch_value(self, gateway_id, system_id, parameters: list[Parameter]):
