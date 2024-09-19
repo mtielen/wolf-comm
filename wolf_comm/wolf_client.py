@@ -1,12 +1,11 @@
 import datetime
-from typing import Union
-
-import httpx
+import json
 import logging
 import re
-import json
+from typing import Union
+
 import aiohttp
-import asyncio
+import httpx
 from httpx import Headers
 
 from wolf_comm.constants import BASE_URL_PORTAL, ID, GATEWAY_ID, NAME, SYSTEM_ID, MENU_ITEMS, TAB_VIEWS, BUNDLE_ID, \
@@ -124,7 +123,6 @@ class WolfClient:
         for sublist in result:
             distinct_names = []
             for val in sublist:
-                #get from language if exists into a var
                 name = val.name
                 if self.language is not None and val.name in self.language:
                     name = self.language[val.name]
@@ -177,26 +175,20 @@ class WolfClient:
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
-                _LOGGER.info('Response status %s', response.status)
                 if response.status == 200 or response.status == 304:
                     return await response.text()
                 else:
-                    _LOGGER.error('Errore nella richiesta HTTP: status %s', response.status)
                     return ""
 
     async def load_localized_json(self, language_input: str):
-        _LOGGER.info('Inside load_localized_json %s', language_input)
         res = await self.fetch_localized_text(language_input)
-        _LOGGER.info('Fetched localized text %s', res)
 
         parsed_json = WolfClient.extract_messages_json(res)
 
         if parsed_json is not None:
             self.language = parsed_json
-            _LOGGER.info('Loaded language %s', language_input)
-            _LOGGER.info('Loaded language json %s', parsed_json)
         else:
-            _LOGGER.error('Impossibile caricare il JSON localizzato per la lingua %s', language_input)
+            _LOGGER.error('Failed to parse localized text for language: %s', language_input)
 
     # api/portal/GetParameterValues
     async def fetch_value(self, gateway_id, system_id, parameters: list[Parameter]):
@@ -212,8 +204,6 @@ class WolfClient:
         }
         res = await self.__request('post', 'api/portal/GetParameterValues', json=data,
                                    headers={"Content-Type": "application/json"})
-
-        _LOGGER.debug('Fetched values: %s', res)
 
         if ERROR_CODE in res or ERROR_TYPE in res:
             if ERROR_MESSAGE in res and res[ERROR_MESSAGE] == ERROR_READ_PARAMETER:
