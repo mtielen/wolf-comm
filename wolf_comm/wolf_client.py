@@ -120,7 +120,6 @@ class WolfClient:
         distinct_ids = []
         flattened = []
         for sublist in result:
-            distinct_names = []
             for val in sublist:
                 spaceSplit = val.name.split('---', 2)
                 if len(spaceSplit) == 2:
@@ -132,7 +131,6 @@ class WolfClient:
 
                 if val.value_id not in distinct_ids:
                     distinct_ids.append(val.value_id)
-                    # distinct_names.append(name)
                     flattened.append(val)
                 else:
                     _LOGGER.debug('Skipping parameter with id %s and name %s', val.value_id, name)
