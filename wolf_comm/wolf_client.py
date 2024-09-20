@@ -126,7 +126,7 @@ class WolfClient:
                 # if self.language is not None and val.name in self.language:
                 #     name = self.language[val.name]
                 #     val.name = name
-                spaceSplit = val.name.split(' ', 2)
+                spaceSplit = val.name.split('---', 2)
                 if len(spaceSplit) == 2:
                     key = spaceSplit[0].split('_')[1] if spaceSplit[0].count('_') > 0 else spaceSplit[0]
                     name = self.replace_with_localized_text(key) + ' ' + spaceSplit[1]
@@ -226,9 +226,9 @@ class WolfClient:
 
     @staticmethod
     def _map_parameter(parameter: dict, parent: str) -> Parameter:
-        group = " "
+        group = ""
         if GROUP in parameter:
-            group = parameter[GROUP] + " "
+            group = parameter[GROUP] + "---"
         value_id = parameter[VALUE_ID]
         name = group + parameter[NAME]
         parameter_id = parameter[PARAMETER_ID]
