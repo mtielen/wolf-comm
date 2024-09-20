@@ -122,12 +122,16 @@ class WolfClient:
         for sublist in result:
             distinct_names = []
             for val in sublist:
-                name = val.name
-                if self.language is not None and val.name in self.language:
-                    name = self.language[val.name]
+                # name = val.name
+                # if self.language is not None and val.name in self.language:
+                #     name = self.language[val.name]
+                #     val.name = name
+                spaceSplit = val.name.split(' ', 2)
+                if len(spaceSplit) == 2:
+                    name = self.language[spaceSplit[0]] + ' ' + self.language[spaceSplit[1]]
                     val.name = name
 
-                if val.value_id not in distinct_ids and name not in distinct_names:
+                if val.value_id not in distinct_ids:
                     distinct_ids.append(val.value_id)
                     # distinct_names.append(name)
                     flattened.append(val)
