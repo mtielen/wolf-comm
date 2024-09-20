@@ -114,7 +114,8 @@ class WolfClient:
         desc = await self.__request('get', 'api/portal/GetGuiDescriptionForGateway', params=payload)
         _LOGGER.debug('Fetched parameters: %s', desc)
         tab_views = desc[MENU_ITEMS][0][TAB_VIEWS]
-        _LOGGER.debug('Tab views: %s', tab_views)
+        # print (tab_views) as json
+
         result = [WolfClient._map_view(view) for view in tab_views]
 
         result.reverse()
@@ -217,8 +218,9 @@ class WolfClient:
 
     @staticmethod
     def _map_parameter(parameter: dict, parent: str) -> Parameter:
-        value_id = parameter[VALUE_ID]
-        name = parameter[NAME]
+        group = parameter['group'] if 'group' in parameter else None
+        value_id = group + "_" + parameter[VALUE_ID]
+        name = group + " " + parameter[NAME]
         parameter_id = parameter[PARAMETER_ID]
         if UNIT in parameter:
             unit = parameter[UNIT]
