@@ -130,6 +130,8 @@ class WolfClient:
                     distinct_ids.append(val.value_id)
                     distinct_names.append(name)
                     flattened.append(val)
+                else:
+                    _LOGGER.debug('Skipping parameter with id %s and name %s', val.value_id, name)
         return flattened
 
     # api/portal/CloseSystem
