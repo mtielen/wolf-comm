@@ -127,6 +127,8 @@ class WolfClient:
                     key = spaceSplit[0].split('_')[1] if spaceSplit[0].count('_') > 0 else spaceSplit[0]
                     name = self.replace_with_localized_text(key) + ' ' + self.replace_with_localized_text(spaceSplit[1])
                     val.name = name
+                else:
+                    val.name = self.replace_with_localized_text(val.name)
 
                 if val.value_id not in distinct_ids:
                     distinct_ids.append(val.value_id)
