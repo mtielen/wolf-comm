@@ -128,7 +128,7 @@ class WolfClient:
                 #     val.name = name
                 spaceSplit = val.name.split(' ', 2)
                 if len(spaceSplit) == 2:
-                    key = spaceSplit[0].split('_')[1]
+                    key = spaceSplit[0].split('_')[1] if spaceSplit[0].count('_') > 0 else spaceSplit[0]
                     name = self.replace_with_localized_text(key) + ' ' + spaceSplit[1]
                     val.name = name
 
