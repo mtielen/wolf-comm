@@ -134,8 +134,6 @@ class WolfClient:
                     flattened.append(val)
                 else:
                     _LOGGER.debug('Skipping parameter with id %s and name %s', val.value_id, name)
-        for e in flattened:
-            _LOGGER.debug('Parameter: %s', e.__str__())
         return flattened
 
     def replace_with_localized_text(self, text: str):
