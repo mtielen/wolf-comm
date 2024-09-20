@@ -128,7 +128,8 @@ class WolfClient:
                 #     val.name = name
                 spaceSplit = val.name.split(' ', 2)
                 if len(spaceSplit) == 2:
-                    name = self.language[spaceSplit[0]] + ' ' + self.language[spaceSplit[1]]
+                    key = spaceSplit[0].split('_')[1]
+                    name = self.replace_with_localized_text(key) + ' ' + spaceSplit[1]
                     val.name = name
 
                 if val.value_id not in distinct_ids:
@@ -138,6 +139,11 @@ class WolfClient:
                 else:
                     _LOGGER.info('Skipping parameter with id %s and name %s', val.value_id, name)
         return flattened
+
+    def replace_with_localized_text(self, text: str):
+        if self.language is not None and text in self.language:
+            return self.language[text]
+        return text
 
     # api/portal/CloseSystem
     async def close_system(self):
