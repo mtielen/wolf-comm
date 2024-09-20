@@ -218,13 +218,11 @@ class WolfClient:
 
     @staticmethod
     def _map_parameter(parameter: dict, parent: str) -> Parameter:
-        group = ""
+        group = " "
         if GROUP in parameter:
-            group = parameter[GROUP]
-        else:
-            _LOGGER.info('Parameter %s has no group', parameter)
+            group = parameter[GROUP] + " "
         value_id = parameter[VALUE_ID]
-        name = group + " " + parameter[NAME]
+        name = group + parameter[NAME]
         parameter_id = parameter[PARAMETER_ID]
         if UNIT in parameter:
             unit = parameter[UNIT]
