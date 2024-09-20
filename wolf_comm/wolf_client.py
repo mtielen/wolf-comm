@@ -9,7 +9,7 @@ import httpx
 from httpx import Headers
 
 from wolf_comm.constants import BASE_URL_PORTAL, ID, GATEWAY_ID, NAME, SYSTEM_ID, MENU_ITEMS, TAB_VIEWS, BUNDLE_ID, \
-    BUNDLE, VALUE_ID_LIST, GUI_ID_CHANGED, SESSION_ID, VALUE_ID, VALUE, STATE, VALUES, PARAMETER_ID, UNIT, \
+    BUNDLE, VALUE_ID_LIST, GUI_ID_CHANGED, SESSION_ID, VALUE_ID, GROUP, VALUE, STATE, VALUES, PARAMETER_ID, UNIT, \
     CELSIUS_TEMPERATURE, BAR, PERCENTAGE, LIST_ITEMS, DISPLAY_TEXT, PARAMETER_DESCRIPTORS, TAB_NAME, HOUR, \
     LAST_ACCESS, ERROR_CODE, ERROR_TYPE, ERROR_MESSAGE, ERROR_READ_PARAMETER, SYSTEM_LIST, GATEWAY_STATE, IS_ONLINE
 from wolf_comm.create_session import create_session, update_session
@@ -218,7 +218,7 @@ class WolfClient:
 
     @staticmethod
     def _map_parameter(parameter: dict, parent: str) -> Parameter:
-        group = parameter['group'] if 'group' in parameter else None
+        group = parameter[GROUP]
         value_id = group + "_" + parameter[VALUE_ID]
         name = group + " " + parameter[NAME]
         parameter_id = parameter[PARAMETER_ID]
