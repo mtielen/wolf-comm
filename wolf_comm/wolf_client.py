@@ -131,7 +131,7 @@ class WolfClient:
 
                 if val.value_id not in distinct_ids and name not in distinct_names:
                     distinct_ids.append(val.value_id)
-                    distinct_names.append(name)
+                    # distinct_names.append(name)
                     flattened.append(val)
                 else:
                     _LOGGER.info('Skipping parameter with id %s and name %s', val.value_id, name)
@@ -223,7 +223,7 @@ class WolfClient:
             group = parameter[GROUP]
         else:
             _LOGGER.info('Parameter %s has no group', parameter)
-        value_id = group + "_" + parameter[VALUE_ID]
+        value_id = parameter[VALUE_ID]
         name = group + " " + parameter[NAME]
         parameter_id = parameter[PARAMETER_ID]
         if UNIT in parameter:
