@@ -122,10 +122,6 @@ class WolfClient:
         for sublist in result:
             distinct_names = []
             for val in sublist:
-                # name = val.name
-                # if self.language is not None and val.name in self.language:
-                #     name = self.language[val.name]
-                #     val.name = name
                 spaceSplit = val.name.split('---', 2)
                 if len(spaceSplit) == 2:
                     key = spaceSplit[0].split('_')[1] if spaceSplit[0].count('_') > 0 else spaceSplit[0]
@@ -137,7 +133,8 @@ class WolfClient:
                     # distinct_names.append(name)
                     flattened.append(val)
                 else:
-                    _LOGGER.info('Skipping parameter with id %s and name %s', val.value_id, name)
+                    _LOGGER.debug('Skipping parameter with id %s and name %s', val.value_id, name)
+        _LOGGER.debug('Fetched parameters: %s', flattened)
         return flattened
 
     def replace_with_localized_text(self, text: str):
