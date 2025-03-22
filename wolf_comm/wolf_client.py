@@ -244,15 +244,13 @@ class WolfClient:
     @staticmethod
     async def fetch_localized_text(culture: str):
         async with aiohttp.ClientSession() as session:
-            # Try requested language first
             url = f"https://www.wolf-smartset.com/js/localized-text/text.culture.{culture}.js"
             async with session.get(url) as response:
                 if response.status == 200 or response.status == 304:
                     return await response.text()
                 
-            # Fall back to English if requested language fails
             if culture != 'en':
-                _LOGGER.debug("Language %s not found, falling back to English", culture)
+                _LOGGER.debug("Culture %s not found, falling back to English", culture)
                 url = "https://www.wolf-smartset.com/js/localized-text/text.culture.en.js"
                 async with session.get(url) as response:
                     if response.status == 200 or response.status == 304:
@@ -272,54 +270,57 @@ class WolfClient:
 
     # api/portal/GetParameterValues
     async def fetch_value(self, gateway_id, system_id, parameters: list[Parameter]):
-          # group requested parametes by bundle_id to do a single request per bundle_id
         values_combined = []
         bundles = {}
+        last_access_map = {}
+        
         for param in parameters:
-            if param.bundle_id not in bundles:
-                bundles[param.bundle_id] = []
-            bundles[param.bundle_id].append(param)
+            bundles.setdefault(param.bundle_id, []).append(param)
+            last_access_map.setdefault(param.bundle_id, None)
 
-        for bundle_id in bundles:
-            if len(bundles[bundle_id]) == 0:
+        for bundle_id, params in bundles.items():
+            if not params:
                 continue
-            data = {
-                    BUNDLE_ID: bundle_id,
-                    BUNDLE: False,
-                    VALUE_ID_LIST: [param.value_id for param in parameters],
-                    GATEWAY_ID: gateway_id,
-                    SYSTEM_ID: system_id,
-                    GUI_ID_CHANGED: False,
-                    SESSION_ID: self.session_id,
-                    LAST_ACCESS: self.last_access,
-                }
-            _LOGGER.debug('Requesting %s values for BUNDLE_ID: %s', len(bundles[bundle_id]), bundle_id)
                 
-            res = await self.__request("post","api/portal/GetParameterValues",json=data,headers={"Content-Type": "application/json"})
+            data = {
+                BUNDLE_ID: bundle_id,
+                BUNDLE: False,
+                VALUE_ID_LIST: [param.value_id for param in params],  
+                GATEWAY_ID: gateway_id,
+                SYSTEM_ID: system_id,
+                GUI_ID_CHANGED: False,
+                SESSION_ID: self.session_id,
+                LAST_ACCESS: last_access_map[bundle_id],
+            }
+            
+            _LOGGER.debug('Requesting %s values for BUNDLE_ID: %s', len(params), bundle_id)
+            res = await self.__request("post", "api/portal/GetParameterValues", json=data, headers={"Content-Type": "application/json"})
 
             if ERROR_CODE in res or ERROR_TYPE in res:
-                    if ERROR_MESSAGE in res and res[ERROR_MESSAGE] == ERROR_READ_PARAMETER:
-                        raise ParameterReadError(res)
-                    raise FetchFailed(res)
-                
-            values_with_value = [Value(v[VALUE_ID], v[VALUE], v[STATE]) for v in res[VALUES] if VALUE in v]
-            values_combined += values_with_value 
+                error_msg = f"Error {res.get(ERROR_CODE, '')}: {res.get(ERROR_MESSAGE, str(res))}"
+                if ERROR_MESSAGE in res and res[ERROR_MESSAGE] == ERROR_READ_PARAMETER:
+                    raise ParameterReadError(error_msg)
+                raise FetchFailed(error_msg)
 
-        self.last_access = res[LAST_ACCESS]
+            values_combined.extend(
+                Value(v[VALUE_ID], v[VALUE], v[STATE])
+                for v in res[VALUES]
+                if VALUE in v
+            )
+            last_access_map[bundle_id] = res[LAST_ACCESS]
+
         _LOGGER.debug('requested values for %s parameters, got values for %s ', len(parameters), len(values_combined))
         return values_combined
-        #return [
-        #    Value(v[VALUE_ID], v[VALUE], v[STATE]) for v in res[VALUES] if VALUE in v
-        #]
 
     # api/portal/WriteParameterValues
-    async def write_value(self, gateway_id, system_id, Value):
+    async def write_value(self, gateway_id, system_id, bundle_id, Value):
         data = {
             WRITE_PARAMETER_VALUES: [
                 {"ValueId": Value[VALUE_ID], "Value": Value[STATE]}
             ],
             SYSTEM_ID: system_id,
             GATEWAY_ID: gateway_id,
+            BUNDLE_ID: bundle_id,
         }
 
         res = await self.__request(
@@ -332,12 +333,10 @@ class WolfClient:
         _LOGGER.debug("Written values: %s", res)
 
         if ERROR_CODE in res or ERROR_TYPE in res:
+            error_msg = f"Error {res.get(ERROR_CODE, '')}: {res.get(ERROR_MESSAGE, str(res))}"
             if ERROR_MESSAGE in res and res[ERROR_MESSAGE] == ERROR_READ_PARAMETER:
-                raise ParameterWriteError(res)
-            raise WriteFailed(res)
-
-        if LAST_ACCESS in res:
-            self.last_access = res[LAST_ACCESS]
+                raise ParameterWriteError(error_msg)
+            raise WriteFailed(error_msg)
 
         return res
 
